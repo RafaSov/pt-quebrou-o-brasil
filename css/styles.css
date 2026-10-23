@@ -535,7 +535,20 @@ footer h2 {
     --topbar: 52px;
   }
 
-  html { scroll-padding-top: 64px; }
+  html {
+    scroll-padding-top: 0;
+    scroll-snap-type: y mandatory;
+  }
+
+  .hero,
+  article,
+  footer {
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+    scroll-margin-top: 0;
+  }
+
+  #fontes { scroll-margin-top: 0; }
 
   .menu-button,
   .brand-bar,
@@ -583,7 +596,8 @@ footer h2 {
     text-decoration: none;
     font-size: 0.72rem;
     font-weight: 500;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     white-space: nowrap;
     padding: 8px 0;
     transition: color 0.3s ease;
@@ -594,6 +608,14 @@ footer h2 {
   .topics a.is-active {
     color: #fff;
     font-weight: 600;
+  }
+
+  .reveal.is-in {
+    transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .reveal.is-in.is-out {
+    opacity: 0;
   }
 
   .page {
@@ -630,10 +652,10 @@ footer h2 {
     max-width: none;
     margin: 8vh 0 0;
     padding-top: 72px;
-    scroll-margin-top: 80px;
+    scroll-margin-top: 0;
   }
 
-  #fontes { scroll-margin-top: 80px; }
+  #fontes { scroll-margin-top: 0; }
 
   article h2 {
     font-size: clamp(2.6rem, 4vw, 3.4rem);
@@ -678,7 +700,10 @@ footer h2 {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
+  html {
+    scroll-behavior: auto;
+    scroll-snap-type: none;
+  }
   .quebrou::after,
   .howto,
   .chart .draw,

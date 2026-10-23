@@ -248,6 +248,26 @@
   }
 
   function spyIndex() {
+    if (desktop.matches) {
+      const mid = window.innerHeight / 2;
+      const heroBox = hero && hero.getBoundingClientRect();
+      if (heroBox && heroBox.top <= mid && heroBox.bottom >= mid) {
+        return { line: mid, index: -1 };
+      }
+      let index = -1;
+      let best = Infinity;
+      articleNodes.forEach(function (node, i) {
+        const rect = node.getBoundingClientRect();
+        if (rect.bottom < 0 || rect.top > window.innerHeight) return;
+        const center = rect.top + rect.height / 2;
+        const dist = Math.abs(center - mid);
+        if (dist < best) {
+          best = dist;
+          index = i;
+        }
+      });
+      return { line: mid, index: index };
+    }
     const line = Math.min(window.innerHeight * 0.32, 180);
     let index = -1;
     articleNodes.forEach(function (node, i) {
@@ -312,10 +332,22 @@
 
   function fadeNeighbors() {
     if (reduce.matches) return;
+    const nodes = document.querySelectorAll("article.reveal, footer.reveal");
+    if (desktop.matches) {
+      const spy = spyIndex();
+      const currentId = spy.index >= 0 ? articleNodes[spy.index].id : null;
+      nodes.forEach(function (node) {
+        node.style.opacity = "";
+        const isCurrent = node.id === currentId || (currentId === "fontes" && node.querySelector("#fontes"));
+        node.classList.toggle("is-out", !isCurrent);
+      });
+      return;
+    }
+    nodes.forEach(function (node) { node.classList.remove("is-out"); });
     const viewH = window.innerHeight;
-    const line = Math.min(viewH * 0.34, 200);
-    const approach = viewH * 0.85;
-    document.querySelectorAll("article.reveal, footer.reveal").forEach(function (node) {
+    const line = Math.min(viewH * 0.22, 140);
+    const approach = Math.min(viewH * 0.28, 240);
+    nodes.forEach(function (node) {
       const rect = node.getBoundingClientRect();
       let opacity = 0.02;
       if (rect.bottom <= line) {
@@ -323,13 +355,14 @@
       } else if (rect.top > line) {
         const dist = rect.top - line;
         const t = 1 - Math.min(1, Math.max(0, dist / approach));
-        const smooth = t * t * (3 - 2 * t);
-        opacity = 0.02 + smooth * 0.4;
+        const smooth = t * t * t;
+        opacity = 0.02 + smooth * 0.1;
       } else {
-        const into = Math.min(1, Math.max(0, (line - rect.top) / (viewH * 0.22)));
-        const arrived = 0.42 + into * 0.58;
+        const into = Math.min(1, Math.max(0, (line - rect.top) / 28));
+        const arrived = 0.12 + into * 0.88;
         const remain = rect.bottom - line;
-        const leaving = Math.min(1, Math.max(0, remain / Math.max(viewH * 0.35, 220)));
+        const leaveSpan = Math.min(Math.max(rect.height * 0.4, 96), viewH * 0.22);
+        const leaving = Math.min(1, Math.max(0, remain / leaveSpan));
         opacity = 0.02 + (arrived - 0.02) * leaving;
       }
       node.style.opacity = opacity.toFixed(3);
