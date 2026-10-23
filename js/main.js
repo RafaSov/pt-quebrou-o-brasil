@@ -215,7 +215,9 @@
       observer.observe(chart);
     }
 
-    article.appendChild(fonteLinha(chapter.sources));
+    if (chapter.sources && chapter.sources.length) {
+      article.appendChild(fonteLinha(chapter.sources));
+    }
     chapters.appendChild(article);
   });
 
@@ -311,7 +313,7 @@
   function fadeNeighbors() {
     if (reduce.matches) return;
     const spy = spyIndex();
-    const currentId = spy.index >= 0 ? articleNodes[spy.index].id : "qual-brasil";
+    const currentId = spy.index >= 0 ? articleNodes[spy.index].id : (desktop.matches ? "qual-brasil" : null);
     document.querySelectorAll("article.reveal, footer.reveal").forEach(function (node) {
       const isCurrent = currentId && (
         node.id === currentId ||
@@ -324,18 +326,100 @@
   const reveals = document.querySelectorAll(".reveal");
   reveals.forEach(function (node) { node.classList.add("is-in"); });
 
+  let suppressBar = false;
+  let barTouched = false;
+  let barSettle;
+  let shownTopic = "";
+
+  function fadeBarLinks() {
+    const links = topicsBar.querySelectorAll("a");
+    if (desktop.matches) {
+      links.forEach(function (link) { link.style.opacity = ""; });
+      return;
+    }
+    const mid = topicsBar.getBoundingClientRect().left + topicsBar.clientWidth / 2;
+    links.forEach(function (link) {
+      const box = link.getBoundingClientRect();
+      const dist = Math.abs(box.left + box.width / 2 - mid);
+      const fade = Math.min(1, dist / (topicsBar.clientWidth * 0.42));
+      link.style.opacity = String(1 - fade * 0.86);
+    });
+  }
+
+  function centerMobileTopic() {
+    if (desktop.matches) return;
+    const active = topicsBar.querySelector("a.is-active");
+    if (!active) return;
+    const id = active.getAttribute("href");
+    const barBox = topicsBar.getBoundingClientRect();
+    const linkBox = active.getBoundingClientRect();
+    const delta = (linkBox.left + linkBox.width / 2) - (barBox.left + barBox.width / 2);
+    if (id === shownTopic && Math.abs(delta) < 8) {
+      fadeBarLinks();
+      return;
+    }
+    shownTopic = id;
+    suppressBar = true;
+    topicsBar.scrollLeft = Math.max(0, topicsBar.scrollLeft + delta);
+    fadeBarLinks();
+    clearTimeout(barSettle);
+    barSettle = setTimeout(function () { suppressBar = false; }, 420);
+  }
+
+  function topicFromBar() {
+    if (desktop.matches || suppressBar || !barTouched) return;
+    const mid = topicsBar.getBoundingClientRect().left + topicsBar.clientWidth / 2;
+    let best = null;
+    let bestDist = Infinity;
+    topicsBar.querySelectorAll("a").forEach(function (link) {
+      const box = link.getBoundingClientRect();
+      const dist = Math.abs(box.left + box.width / 2 - mid);
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = link;
+      }
+    });
+    if (!best) return;
+    const id = best.getAttribute("href").slice(1);
+    const current = topicsBar.querySelector("a.is-active");
+    if (current === best) return;
+    const target = document.getElementById(id);
+    if (!target) return;
+    shownTopic = best.getAttribute("href");
+    suppressBar = true;
+    target.scrollIntoView({ behavior: reduce.matches ? "auto" : "smooth", block: "start" });
+    clearTimeout(barSettle);
+    barSettle = setTimeout(function () { suppressBar = false; }, 700);
+  }
+
+  topicsBar.addEventListener("pointerdown", function () {
+    if (!desktop.matches) barTouched = true;
+  });
+
+  topicsBar.addEventListener("scroll", function () {
+    fadeBarLinks();
+    if (desktop.matches || suppressBar || !barTouched) return;
+    clearTimeout(barSettle);
+    barSettle = setTimeout(topicFromBar, 140);
+  }, { passive: true });
+
   function onScroll() {
     const heroGone = window.scrollY > window.innerHeight * 0.45;
     if (desktop.matches) {
       topbar.classList.toggle("is-on", heroGone);
       topbar.classList.toggle("is-solid", heroGone);
     } else {
-      topbar.classList.add("is-on");
-      topbar.classList.toggle("is-solid", window.scrollY > 8);
+      const first = document.getElementById("qual-brasil");
+      const showBar = first && first.getBoundingClientRect().top < window.innerHeight * 0.55;
+      topbar.classList.toggle("is-on", showBar);
+      topbar.classList.toggle("is-solid", showBar);
+      if (!showBar) shownTopic = "";
     }
     updateSpy();
     updateProgress();
     fadeNeighbors();
+    fadeBarLinks();
+    centerMobileTopic();
   }
   onScroll();
   window.addEventListener("scroll", onScroll, { passive: true });

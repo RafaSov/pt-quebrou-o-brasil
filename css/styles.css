@@ -298,7 +298,7 @@ article {
 }
 
 .reveal.is-in.is-out {
-  opacity: 0.12;
+  opacity: 0.04;
   transform: none;
 }
 
@@ -462,6 +462,68 @@ footer h2 {
   to { opacity: 0.12; transform: translateY(-40px) scale(0.985); }
 }
 
+@media (max-width: 899px) {
+  .menu-button,
+  .brand-bar,
+  .backdrop,
+  .side { display: none; }
+
+  .topbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    padding: 0;
+    background: rgba(7, 7, 7, 0.94);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-110%);
+    transition: opacity 0.28s ease, transform 0.28s ease;
+  }
+
+  .topbar.is-on {
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+  }
+
+  .hero {
+    min-height: 78vh;
+    padding-bottom: 10vh;
+  }
+
+  #qual-brasil {
+    margin-top: 36vh;
+  }
+
+  .topics {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    padding: 0 38vw;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 24%, #000 76%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0%, #000 24%, #000 76%, transparent 100%);
+  }
+
+  .topics::-webkit-scrollbar { display: none; }
+
+  .topics a {
+    flex: 0 0 auto;
+    scroll-snap-align: center;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    white-space: nowrap;
+    padding: 14px 16px;
+  }
+
+  .topics a.is-active { font-weight: 600; }
+}
+
 @media (min-width: 900px) {
   :root {
     --pad: 48px;
@@ -515,7 +577,7 @@ footer h2 {
 
   .topics a {
     flex: 0 0 auto;
-    color: rgba(244, 241, 234, 0.34);
+    color: rgba(244, 241, 234, 0.18);
     text-decoration: none;
     font-size: 0.72rem;
     font-weight: 500;
