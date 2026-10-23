@@ -288,18 +288,15 @@ article {
   opacity: 0;
   transform: translateY(28px);
   transition:
-    opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 1.35s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 1.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.reveal.is-in {
+.reveal.is-in,
+.reveal.is-in.is-out {
   opacity: 1;
   transform: none;
-}
-
-.reveal.is-in.is-out {
-  opacity: 0.04;
-  transform: none;
+  transition: opacity 0.22s ease-out;
 }
 
 .kicker {
@@ -489,11 +486,16 @@ footer h2 {
 
   .hero {
     min-height: 78vh;
-    padding-bottom: 10vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 14vh 0 8vh;
   }
 
   #qual-brasil {
-    margin-top: 36vh;
+    margin-top: 22vh;
   }
 
   .topics {
@@ -577,7 +579,7 @@ footer h2 {
 
   .topics a {
     flex: 0 0 auto;
-    color: rgba(244, 241, 234, 0.18);
+    color: rgba(244, 241, 234, 0.11);
     text-decoration: none;
     font-size: 0.72rem;
     font-weight: 500;

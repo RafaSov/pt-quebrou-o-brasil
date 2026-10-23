@@ -312,14 +312,27 @@
 
   function fadeNeighbors() {
     if (reduce.matches) return;
-    const spy = spyIndex();
-    const currentId = spy.index >= 0 ? articleNodes[spy.index].id : (desktop.matches ? "qual-brasil" : null);
+    const viewH = window.innerHeight;
+    const line = Math.min(viewH * 0.34, 200);
+    const approach = viewH * 0.85;
     document.querySelectorAll("article.reveal, footer.reveal").forEach(function (node) {
-      const isCurrent = currentId && (
-        node.id === currentId ||
-        (currentId === "fontes" && node.querySelector("#fontes"))
-      );
-      node.classList.toggle("is-out", !isCurrent);
+      const rect = node.getBoundingClientRect();
+      let opacity = 0.02;
+      if (rect.bottom <= line) {
+        opacity = 0.02;
+      } else if (rect.top > line) {
+        const dist = rect.top - line;
+        const t = 1 - Math.min(1, Math.max(0, dist / approach));
+        const smooth = t * t * (3 - 2 * t);
+        opacity = 0.02 + smooth * 0.4;
+      } else {
+        const into = Math.min(1, Math.max(0, (line - rect.top) / (viewH * 0.22)));
+        const arrived = 0.42 + into * 0.58;
+        const remain = rect.bottom - line;
+        const leaving = Math.min(1, Math.max(0, remain / Math.max(viewH * 0.35, 220)));
+        opacity = 0.02 + (arrived - 0.02) * leaving;
+      }
+      node.style.opacity = opacity.toFixed(3);
     });
   }
 
@@ -381,6 +394,7 @@
     });
     if (!best) return;
     const id = best.getAttribute("href").slice(1);
+    if (id === "qual-brasil") return;
     const current = topicsBar.querySelector("a.is-active");
     if (current === best) return;
     const target = document.getElementById(id);
