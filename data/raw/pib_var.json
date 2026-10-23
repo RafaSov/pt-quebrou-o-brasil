@@ -375,5 +375,31 @@
     "D2N": "PIB - variação em volume",
     "D3C": "2023",
     "D3N": "2023"
+  },
+  {
+    "NC": "1",
+    "NN": "Brasil",
+    "MC": "2",
+    "MN": "%",
+    "V": "3.4",
+    "D1C": "1",
+    "D1N": "Brasil",
+    "D2C": "9810",
+    "D2N": "PIB - variação em volume",
+    "D3C": "2024",
+    "D3N": "2024"
+  },
+  {
+    "NC": "1",
+    "NN": "Brasil",
+    "MC": "2",
+    "MN": "%",
+    "V": "2.3",
+    "D1C": "1",
+    "D1N": "Brasil",
+    "D2C": "9810",
+    "D2N": "PIB - variação em volume",
+    "D3C": "2025",
+    "D3N": "2025"
   }
 ]

@@ -23,6 +23,7 @@
       const chapter = window.SITE.chapters.find(function (item) { return item.id === id; });
       if (chapter) window.drawChart(chart, chapter);
     });
+    onScroll();
   });
 
   function setNav(open) {
@@ -102,6 +103,10 @@
       if (!seen.has(item.href)) seen.set(item.href, item.label);
     });
   }
+
+  const introTopic = { id: "qual-brasil", nav: "Qual Brasil?" };
+  topicsBar.appendChild(topicLink(introTopic, false));
+  topicsList.appendChild(topicLink(introTopic, false));
 
   window.SITE.chapters.forEach(function (chapter) {
     remember(chapter.sources);
@@ -240,34 +245,86 @@
     });
   }
 
-  function updateSpy() {
-    const line = 180;
-    let current = articleNodes[0];
-    articleNodes.forEach(function (node) {
-      if (node.getBoundingClientRect().top <= line) current = node;
+  function spyIndex() {
+    const line = Math.min(window.innerHeight * 0.32, 180);
+    let index = -1;
+    articleNodes.forEach(function (node, i) {
+      if (node.getBoundingClientRect().top <= line) index = i;
     });
+    return { line: line, index: index };
+  }
+
+  function chapterProgress(index, line) {
+    if (index < 0) return 0;
+    const current = articleNodes[index];
+    const next = articleNodes[index + 1];
+    if (!next) {
+      const rect = current.getBoundingClientRect();
+      const leftover = rect.bottom - line;
+      return leftover <= 0 ? 1 : Math.min(1, Math.max(0, 1 - leftover / Math.max(rect.height, 1)));
+    }
+    const a = current.getBoundingClientRect().top;
+    const b = next.getBoundingClientRect().top;
+    const span = b - a;
+    return span > 0 ? Math.min(1, Math.max(0, (line - a) / span)) : 0;
+  }
+
+  function updateSpy() {
+    const spy = spyIndex();
+    const current = articleNodes[Math.max(spy.index, 0)];
     if (current) markActive(current.id);
+    if (spy.index < 0) {
+      allTopicLinks.forEach(function (link) { link.classList.remove("is-active"); });
+    }
+  }
+
+  function updateProgress() {
+    const spy = spyIndex();
+    const t = chapterProgress(spy.index, spy.line);
+    const links = Array.from(topicsBar.querySelectorAll("a"));
+    if (desktop.matches && links.length) {
+      if (spy.index < 0) {
+        progress.style.width = "0px";
+        return;
+      }
+      const currentLink = links[spy.index];
+      const nextLink = links[spy.index + 1];
+      if (!currentLink) return;
+      function topicMid(link) {
+        const box = link.getBoundingClientRect();
+        return box.left + box.width / 2;
+      }
+      const from = topicMid(currentLink);
+      const to = nextLink ? topicMid(nextLink) : from;
+      const hold = t < 0.16 ? 0 : (t - 0.16) / 0.84;
+      progress.style.width = Math.round(from + (to - from) * hold) + "px";
+      return;
+    }
+    const n = Math.max(articleNodes.length - 1, 1);
+    if (spy.index < 0) {
+      progress.style.width = "0%";
+      return;
+    }
+    progress.style.width = (((spy.index + t) / n) * 100) + "%";
+  }
+
+  function fadeNeighbors() {
+    if (reduce.matches) return;
+    const spy = spyIndex();
+    const currentId = spy.index >= 0 ? articleNodes[spy.index].id : "qual-brasil";
+    document.querySelectorAll("article.reveal, footer.reveal").forEach(function (node) {
+      const isCurrent = currentId && (
+        node.id === currentId ||
+        (currentId === "fontes" && node.querySelector("#fontes"))
+      );
+      node.classList.toggle("is-out", !isCurrent);
+    });
   }
 
   const reveals = document.querySelectorAll(".reveal");
-  if (reduce.matches) {
-    reveals.forEach(function (node) { node.classList.add("is-in"); });
-  } else {
-    const io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("is-in");
-          io.unobserve(entry.target);
-        }
-      });
-    }, { rootMargin: "0px 0px -12% 0px", threshold: 0.12 });
-    reveals.forEach(function (node) { io.observe(node); });
-  }
+  reveals.forEach(function (node) { node.classList.add("is-in"); });
 
   function onScroll() {
-    const max = document.documentElement.scrollHeight - window.innerHeight;
-    const ratio = max > 0 ? window.scrollY / max : 0;
-    progress.style.width = (ratio * 100) + "%";
     const heroGone = window.scrollY > window.innerHeight * 0.45;
     if (desktop.matches) {
       topbar.classList.toggle("is-on", heroGone);
@@ -277,9 +334,12 @@
       topbar.classList.toggle("is-solid", window.scrollY > 8);
     }
     updateSpy();
+    updateProgress();
+    fadeNeighbors();
   }
   onScroll();
   window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
   window.addEventListener("hashchange", onScroll);
 
   if (hero) {

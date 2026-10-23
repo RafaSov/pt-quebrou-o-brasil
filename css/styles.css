@@ -13,9 +13,9 @@
   --serif: "Instrument Serif", Georgia, serif;
   --sans: Inter, "Segoe UI", system-ui, sans-serif;
   --pad: 24px;
-  --max: 48rem;
-  --chart: 64rem;
-  --page: 72rem;
+  --max: 52rem;
+  --chart: 70rem;
+  --page: 80rem;
   --topbar: 56px;
 }
 
@@ -65,7 +65,7 @@ a {
 
 .skip:focus { top: 12px; }
 
-.progress {
+.topic-progress {
   position: fixed;
   top: 0;
   left: 0;
@@ -73,8 +73,9 @@ a {
   width: 0;
   background: var(--red);
   z-index: 12;
-  transform-origin: left;
-  transition: width 0.12s linear;
+  transform-origin: left center;
+  transition: width 0.14s linear;
+  pointer-events: none;
 }
 
 .topbar {
@@ -88,10 +89,7 @@ a {
   padding: 0 var(--pad);
   background: rgba(7, 7, 7, 0.86);
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid transparent;
 }
-
-.topbar.is-solid { border-bottom-color: var(--line); }
 
 .brand-bar {
   margin: 0;
@@ -207,9 +205,9 @@ body.nav-open .side { transform: none; }
   margin: 0;
   font-family: var(--serif);
   font-weight: 400;
-  font-size: clamp(3.4rem, 16vw, 5.4rem);
-  line-height: 0.92;
-  letter-spacing: -0.04em;
+  font-size: clamp(5.33rem, 23.4vw, 8.32rem);
+  line-height: 0.88;
+  letter-spacing: -0.045em;
 }
 
 .hero h1 .line { display: block; }
@@ -235,43 +233,17 @@ body.nav-open .side { transform: none; }
   pointer-events: none;
 }
 
-.lede {
-  max-width: 36rem;
-  margin: 40px 0 0;
-  font-size: 1.2rem;
-  line-height: 1.65;
-  animation: rise 0.9s 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.hero-marks {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin: 36px 0 0;
-  padding: 0;
-  list-style: none;
-  color: var(--muted);
-  font-size: 0.98rem;
-  animation: rise 0.9s 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.hero-marks strong {
-  display: inline-block;
-  min-width: 7.2rem;
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
-}
-
 .howto {
   max-width: var(--max);
-  margin: 64px 0 8px;
+  margin: 8px 0 0;
   padding-top: 28px;
   border-top: 1px solid var(--line);
   color: var(--muted);
   line-height: 1.7;
 }
 
-.howto p { margin: 0; }
+.howto p { margin: 0 0 1em; }
+.howto p:last-of-type { margin-bottom: 0; }
 
 .legend-key {
   display: flex;
@@ -309,7 +281,6 @@ body.nav-open .side { transform: none; }
 article {
   padding-top: 56px;
   margin-top: 40px;
-  border-top: 1px solid var(--line);
   scroll-margin-top: 72px;
 }
 
@@ -323,6 +294,11 @@ article {
 
 .reveal.is-in {
   opacity: 1;
+  transform: none;
+}
+
+.reveal.is-in.is-out {
+  opacity: 0.12;
   transform: none;
 }
 
@@ -489,9 +465,9 @@ footer h2 {
 @media (min-width: 900px) {
   :root {
     --pad: 48px;
-    --max: 52rem;
-    --chart: 70rem;
-    --page: 78rem;
+    --max: 60rem;
+    --chart: 84rem;
+    --page: 94rem;
     --topbar: 52px;
   }
 
@@ -512,7 +488,7 @@ footer h2 {
     backdrop-filter: none;
     opacity: 0;
     pointer-events: none;
-    transition: background 0.35s ease, border-color 0.35s ease;
+    transition: background 0.35s ease;
   }
 
   .topbar.is-on {
@@ -565,45 +541,25 @@ footer h2 {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 96px 0 28vh;
+    padding: 12vh 0;
   }
 
   .hero-kicker {
-    font-size: 0.85rem;
-    margin-bottom: 28px;
+    font-size: 0.9rem;
+    margin-bottom: 32px;
   }
 
   .hero h1 {
-    font-size: clamp(6.4rem, 11vw, 9.6rem);
-    max-width: 18ch;
-  }
-
-  .lede {
-    max-width: 44rem;
-    margin-top: 72px;
-    font-size: 1.38rem;
-    line-height: 1.7;
-  }
-
-  .hero-marks {
-    flex-direction: row;
-    gap: 36px;
-    margin-top: 56px;
-    font-size: 1.05rem;
-  }
-
-  .hero-marks strong {
-    display: block;
-    min-width: 0;
-    margin-bottom: 4px;
-    font-size: 1.15rem;
+    font-size: clamp(9.62rem, 17.55vw, 15.6rem);
+    max-width: 12ch;
   }
 
   .howto {
-    max-width: none;
-    margin: 8vh auto 8px;
-    padding-top: 56px;
+    max-width: var(--max);
+    margin: 12px 0 0;
+    padding-top: 36px;
     font-size: 1.14rem;
+    line-height: 1.75;
   }
 
   article {
@@ -650,37 +606,29 @@ footer h2 {
       animation-range: exit 0% exit 55%;
     }
 
-    .reveal {
-      opacity: 1;
-      transform: none;
-      animation: reveal-in linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 18%;
+    article.reveal.is-out,
+    footer.reveal.is-out {
+      animation: none;
     }
   }
-}
-
-@keyframes reveal-in {
-  from { opacity: 0; transform: translateY(36px); }
-  to { opacity: 1; transform: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .quebrou::after,
-  .lede,
-  .hero-marks,
+  .howto,
   .chart .draw,
   .hero,
   .reveal {
     animation: none;
   }
   .quebrou::after { transform: rotate(-2.2deg) scaleX(1); }
-  .reveal {
+  .reveal,
+  .reveal.is-in.is-out {
     opacity: 1;
     transform: none;
     transition: none;
   }
-  .progress { transition: none; }
+  .topic-progress { transition: none; }
   .side { transition: none; }
 }

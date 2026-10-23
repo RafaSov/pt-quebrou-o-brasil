@@ -71,7 +71,7 @@ def unemployment():
 
 
 def gdp_index():
-    growth = sidra_points("pib_var.json")
+    growth = sorted(sidra_points("pib_var.json"), key=lambda point: point["year"])
     level = {1995: Decimal("100")}
     for point in growth:
         level[point["year"]] = level[point["year"] - 1] * (Decimal("1") + Decimal(str(point["value"])) / Decimal("100"))
@@ -135,16 +135,16 @@ carros = series_from([
     (2010, 2856540), (2011, 2901647), (2012, 3115223), (2013, 3040783),
     (2014, 2794687), (2015, 2123009), (2016, 1688289), (2017, 1856584),
     (2018, 2102114), (2019, 2262073), (2020, 1615942), (2021, 1558467),
-    (2022, 1576662), (2023, 1721400),
+    (2022, 1576662), (2023, 1721415), (2024, 1948681), (2025, 1997264),
 ], 2, Decimal("1000000"))
 
-# 1ª dose da tríplice viral. 2002-2008: SI-PNI via DSSBR/Fiocruz. 2009-2023: SI-PNI via CNM.
+# 1ª dose da tríplice viral. 2002-2008: SI-PNI via DSSBR/Fiocruz. 2009-2023: SI-PNI via CNM. 2024: PNI/MS.
 vacina = series_from([
     (2002, 96.9), (2003, 113.0), (2004, 105.0), (2005, 99.7), (2006, 102.2),
     (2007, 104.9), (2008, 101.3), (2009, 103.7), (2010, 99.9), (2011, 102.4),
     (2012, 99.5), (2013, 107.5), (2014, 112.8), (2015, 96.1), (2016, 95.4),
     (2017, 86.2), (2018, 92.6), (2019, 93.1), (2020, 80.9), (2021, 74.9),
-    (2022, 80.7), (2023, 86.8),
+    (2022, 80.7), (2023, 86.8), (2024, 95.7),
 ], 1)
 
 # PNAD/IBGE, domicílios rurais permanentes sem iluminação, invertido para % com luz.
@@ -179,6 +179,12 @@ uni_total = series_from([
 pico_reserva = max(reservas, key=lambda point: point["value"])
 pico_carro = max(carros, key=lambda point: point["value"])
 
+# FBSP, tabela nacional de vítimas de feminicídio, 2021–2025.
+# 2025 no Anuário (1.571) difere desta tabela (1.568); o gráfico fica com uma fonte só.
+feminicidios = series_from([
+    (2021, 1347), (2022, 1455), (2023, 1475), (2024, 1492), (2025, 1568),
+], 0)
+
 
 site = {
     "chapters": [
@@ -189,9 +195,8 @@ site = {
             "kind": "broke",
             "title": "O Brasil da fome",
             "leitura": [
-                f"Em 2002, {br(at(fome_pnad, 2002), 1)}% da população vivia em extrema pobreza. Em 2014, essa parcela havia caído para {br(at(fome_pnad, 2014), 1)}%. Em doze anos, o número ficou abaixo de um terço do que era.",
-                "O gráfico reúne duas pesquisas. A linha clara vem da PNAD anual, do IBGE, e termina em 2014. A linha azul vem da PNAD Contínua e usa outro critério: viver com menos de US$ 3 por dia. Por isso as duas linhas não se conectam. Nessa segunda conta, a extrema pobreza volta a subir depois de 2015, chega a 10,4% em 2021 e recua para 5,5% em 2025.",
-                "A FAO, da ONU, usa ainda um terceiro indicador. No mapa da fome, o Brasil saiu dessa lista em 2014, quando a subalimentação ficou abaixo de 2,5%. Voltou a aparecer no triênio 2019–2021.",
+                f"Houve um tempo em que a extrema pobreza atingia uma parcela muito maior da população. Na pesquisa antiga, essa fatia cai de {br(at(fome_pnad, 2002), 1)}% em 2002 para {br(at(fome_pnad, 2014), 1)}% em 2014. A fome não desapareceu, mas milhões de pessoas passaram a viver em outra condição.",
+                f"As duas linhas não são a mesma pesquisa. A azul, de quem vive com menos de US$ 3 por dia, sobe depois de 2014, chega a 10,4% em 2021 e recua para {br(at(fome_pnadc, 2025), 1)}% em 2025. A melhora foi importante. O retrocesso mostra que ela não é irreversível. Pobreza monetária também não é o mapa da fome da FAO.",
             ],
             "hint": "Há um intervalo em 2000 e em 2010 porque, em ano de Censo, a PNAD anual não foi a campo.",
             "unit": "% da população",
@@ -205,6 +210,7 @@ site = {
                 {"label": "Ipea, extrema pobreza", "href": "https://www.ipeadata.gov.br/ExibeSerie.aspx?module=M&serid=37816"},
                 {"label": "Ipea, linha de US$ 3/dia", "href": "https://www.ipeadata.gov.br/ExibeSerie.aspx?serid=2096727544"},
                 {"label": "FAO, Estado da Insegurança Alimentar 2024", "href": "https://www.fao.org/publications/sofi"},
+                {"label": "Ipea, nota técnica 1995–2024", "href": "https://repositorio.ipea.gov.br/bitstreams/f7669f57-30f0-4ed5-9e5a-ddcd6a616381/download"},
             ],
         },
         {
@@ -212,11 +218,10 @@ site = {
             "index": "02",
             "nav": "Desigualdade",
             "kind": "broke",
-            "title": "O Brasil da desigualdade",
+            "title": "O Brasil dos poucos que tinham muito",
             "leitura": [
-                f"O índice de Gini mostra o quanto a renda está concentrada. Quanto mais perto de zero, menos desigual é o país. Na pesquisa antiga, o índice cai de {br(at(gini_pnad, 2002), 3)} em 2002 para {br(at(gini_pnad, 2014), 3)} em 2014.",
-                f"A PNAD Contínua é outra pesquisa, com outra conta. Nela, o Gini vai de {br(at(gini_pnadc, 2012), 3)} em 2012 a {br(at(gini_pnadc, 2024), 3)} em 2024. Há uma queda na pandemia e uma pequena alta em 2025.",
-                f"No mesmo período da série antiga, a renda média por pessoa no domicílio subiu de R$ {br(at(renda, 2002), 0)} para R$ {br(at(renda, 2014), 0)}, já descontada a inflação.",
+                f"A desigualdade brasileira sempre foi profunda. Na pesquisa antiga, o índice de Gini cai de {br(at(gini_pnad, 2002), 3)} em 2002 para {br(at(gini_pnad, 2014), 3)} em 2014, e a renda média por pessoa sobe de R$ {br(at(renda, 2002), 0)} para R$ {br(at(renda, 2014), 0)}, já sem a inflação. Quanto menor o Gini, menos concentrada está a renda.",
+                f"O Brasil continua desigual, e a queda não foi contínua. A linha azul é outra pesquisa, a PNAD Contínua: vai de {br(at(gini_pnadc, 2012), 3)} em 2012 a {br(at(gini_pnadc, 2025), 3)} em 2025. As duas linhas não se emendam, e nenhum governo explica a trajetória inteira.",
             ],
             "hint": "A linha clara e a linha azul não são o mesmo índice. Cada uma vem de uma pesquisa. Por isso os números de 2012 não coincidem.",
             "unit": "índice de Gini",
@@ -237,12 +242,12 @@ site = {
             "index": "03",
             "nav": "Desemprego",
             "kind": "broke",
-            "title": "O Brasil do desemprego",
+            "title": "O Brasil de quem não conseguia trabalho",
             "leitura": [
-                f"A pesquisa contínua, válida para o país inteiro o ano todo, começa em 2012. Em 2014, a média do desemprego ficou em {br(at(desocup, 2014), 1)}%. Em 2020, no auge da pandemia, chegou a {br(at(desocup, 2020), 1)}%. Em 2025, recuou para {br(at(desocup, 2025), 1)}% — o menor valor desta série.",
-                "A pesquisa anterior media apenas uma semana de setembro, com outro método. Por isso ela não entra no gráfico: misturar as duas séries seria comparar medidas diferentes.",
+                f"Ter trabalho é uma das principais formas de ter renda e autonomia. A taxa passou por melhora, uma piora forte na recessão e na pandemia — {br(at(desocup, 2020), 1)}% em 2020, nesta conta — e uma nova queda depois.",
+                f"Em 2025, a taxa anual do IBGE foi de 5,6%, a menor da série anual desde 2012. O ponto do gráfico, {br(at(desocup, 2025), 1)}%, é outra medida: a média dos quatro trimestres. Informalidade e subutilização, de 14,5% em 2025, não entram na linha. Uma taxa menor não significa que o problema acabou.",
             ],
-            "hint": "Cada ponto é a média dos quatro trimestres. O ano de 2026 ainda não fechou, e por isso não aparece.",
+            "hint": "Cada ponto é a média dos quatro trimestres, não a taxa anual publicada pelo IBGE. 2026 ainda não fechou.",
             "unit": "% sem trabalho",
             "digits": 2,
             "axisZero": True,
@@ -250,6 +255,7 @@ site = {
             "sources": [
                 {"label": "IBGE, desocupação", "href": "https://sidra.ibge.gov.br/tabela/4099"},
                 {"label": "IBGE, PNAD Contínua", "href": "https://www.ibge.gov.br/estatisticas/sociais/trabalho/9171-pesquisa-nacional-por-amostra-de-domicilios-continua-mensal.html"},
+                {"label": "IBGE, taxa anual de 2025", "href": "https://agenciadenoticias.ibge.gov.br/agencia-sala-de-imprensa/2013-agencia-de-noticias/releases/45759-pnad-continua-em-2025-taxa-anual-de-desocupacao-foi-de-5-6-enquanto-taxa-de-subutilizacao-foi-14-5"},
             ],
         },
         {
@@ -257,10 +263,10 @@ site = {
             "index": "04",
             "nav": "Inflação",
             "kind": "broke",
-            "title": "O Brasil da inflação",
+            "title": "O Brasil em que o dinheiro perdia valor",
             "leitura": [
-                f"O IPCA encerrou 2002 em {br(at(ipca, 2002), 1)}%. Nos anos seguintes, a inflação ficou, na maior parte do tempo, abaixo desse patamar. Voltou aos dois dígitos em 2015, com {br(at(ipca, 2015), 1)}%, e outra vez em 2021, com {br(at(ipca, 2021), 1)}%.",
-                f"Em 2025, o ano fechou em {br(at(ipca, 2025), 1)}%. Cada ponto do gráfico é o acumulado de janeiro a dezembro, não a média dos meses.",
+                f"Quando os preços sobem rápido, o salário compra menos. O IPCA fechou 2002 em {br(at(ipca, 2002), 1)}% e voltou a passar de 10% em 2015 ({br(at(ipca, 2015), 1)}%) e em 2021 ({br(at(ipca, 2021), 1)}%).",
+                f"Em 2025, a inflação do ano ficou em {br(at(ipca, 2025), 1)}%. Isso quer dizer que os preços subiram mais devagar — não que tenham voltado a ser baratos. Cada ponto é a alta acumulada de janeiro a dezembro, não o preço dos alimentos nem o poder de compra da família.",
             ],
             "hint": "Um ponto por ano, sempre o fechamento de dezembro. O ano de 2026 ainda não terminou.",
             "unit": "% no ano",
@@ -277,19 +283,19 @@ site = {
             "index": "05",
             "nav": "Mortalidade",
             "kind": "broke",
-            "title": "O Brasil da mortalidade infantil",
+            "title": "O Brasil em que mais crianças morriam cedo",
             "leitura": [
-                f"Em 2002, {br(at(mort, 2002), 1)} bebês morriam antes de completar um ano, a cada mil nascidos vivos. Em 2016, eram {br(at(mort, 2016), 1)}. A linha cai de ponta a ponta.",
-                "Esta tabela do IBGE termina em 2016 porque é a projeção revisada em 2013. A tábua de mortalidade de 2023, do mesmo instituto, aponta 12,5 mortes por mil nascidos. É outro cálculo, e por isso esse número fica só no texto.",
+                f"Menos crianças passaram a morrer antes de completar um ano. Nesta projeção do IBGE, a taxa cai de {br(at(mort, 2002), 1)} mortes por mil nascidos vivos em 2002 para {br(at(mort, 2016), 1)} em 2016.",
+                "Vacinação, pré-natal, saneamento, alimentação e acesso à saúde entram nessa história. O gráfico não separa o peso de cada um. A linha para em 2016 porque é essa projeção. A tábua de 2024, outro cálculo, aponta 12,3 por mil e não entra aqui.",
             ],
-            "hint": "A linha cobre 2000 a 2016. O 12,5 de 2023 vem de outra tábua e não entra no gráfico.",
+            "hint": "A linha cobre 2000 a 2016. O 12,3 de 2024 vem de outra tábua e não entra no gráfico.",
             "unit": "mortes a cada mil nascidos",
             "digits": 1,
             "axisZero": False,
             "series": [{"name": "Mortalidade infantil", "points": mort}],
             "sources": [
                 {"label": "IBGE, mortalidade infantil", "href": "https://sidra.ibge.gov.br/tabela/3834"},
-                {"label": "IBGE, tábua de 2023", "href": "https://agenciadenoticias.ibge.gov.br/agencia-noticias/2012-agencia-de-noticias/noticias/41984-em-2023-expectativa-de-vida-chega-aos-76-4-anos-e-supera-patamar-pre-pandemia"},
+                {"label": "IBGE, tábua de 2024", "href": "https://agenciadenoticias.ibge.gov.br/agencia-noticias/2012-agencia-de-noticias/noticias/45275-expectativa-de-vida-chega-a-76-6-anos-em-2024"},
             ],
         },
         {
@@ -297,12 +303,12 @@ site = {
             "index": "06",
             "nav": "Vacinação",
             "kind": "broke",
-            "title": "O Brasil da vacinação baixa",
+            "title": "O Brasil em que a vacinação não chegava a todos",
             "leitura": [
-                "A primeira dose da tríplice viral — sarampo, caxumba e rubéola — ficou, na maior parte dos anos 2000, acima da meta de 95%. Em 2014 chegou a 112,8%. Valores acima de 100% aparecem quando se aplicam mais doses do que a estimativa de crianças daquele ano.",
-                "A queda vem depois. Em 2021 a cobertura foi a 74,9%. Em 2023 subiu para 86,8%, ainda abaixo da meta. A pólio fez o mesmo caminho: 96,8% em 2014, 71% em 2021 e 84,6% em 2023.",
+                "Vacinas protegem contra doenças que deixam sequelas e matam. A linha é só a primeira dose da tríplice viral, contra sarampo, caxumba e rubéola. Em parte dos anos 2000 ela ficou acima da meta de 95% e chegou a 112,8% em 2014. Acima de 100% significa mais doses do que a estimativa de crianças daquele ano, não que todas tenham sido vacinadas.",
+                "Depois a cobertura caiu, foi a 74,9% em 2021 e voltou a 95,7% em 2024. Recuperar uma dose não regulariza o calendário. A segunda dose e a pólio são outras contas e não entram nesta linha. Os trechos da série também vêm de extrações diferentes.",
             ],
-            "hint": "A linha é a 1ª dose da tríplice viral. De 2002 a 2008 os números vêm de uma tabulação antiga do SI-PNI. De 2009 em diante, da extração de 2024. Por isso 2009 não é a emenda perfeita de 2008.",
+            "hint": "A linha é a 1ª dose da tríplice viral. De 2002 a 2008 os números vêm de uma tabulação antiga do SI-PNI. De 2009 a 2023, da extração da CNM. O ponto de 2024 vem do painel do PNI. Por isso as emendas não são perfeitas.",
             "unit": "% das crianças",
             "digits": 1,
             "axisZero": False,
@@ -311,26 +317,29 @@ site = {
                 {"label": "Ministério da Saúde, PNI", "href": "https://datasus.saude.gov.br/acesso-a-informacao/imunizacoes-desde-1994/"},
                 {"label": "Fiocruz, cobertura 2000–2009", "href": "https://dssbr.ensp.fiocruz.br/wp-content/uploads/2012/03/Ind030203-20120130.pdf"},
                 {"label": "CNM, coberturas 2014–2023", "href": "https://cnm.org.br/storage/biblioteca/2024/Estudos_tecnicos/202407_ET_SAU_Avaliacao_coberturas_vacinais_municipios_criancas_cinco_anos.pdf"},
+                {"label": "Ministério da Saúde, cobertura 2024", "href": "https://www.gov.br/saude/pt-br/assuntos/saude-com-ciencia/noticias/2024/dezembro/brasil-amplia-cobertura-vacinal-de-15-das-16-vacinas-do-calendario-infantil"},
+                {"label": "Ministério da Saúde, nota 368/2025", "href": "https://www.gov.br/saude/pt-br/centrais-de-conteudo/publicacoes/notas-tecnicas/2025/nota-tecnica-conjunta-no-368-2025-cgvdi-dpni-svsa-ms.pdf"},
+                {"label": "Ministério da Saúde, painel PNI", "href": "https://infoms.saude.gov.br/extensions/SEIDIGI_DEMAS_VACINACAO_CALENDARIO_NACIONAL_COBERTURA_OCORRENCIA/SEIDIGI_DEMAS_VACINACAO_CALENDARIO_NACIONAL_COBERTURA_OCORRENCIA.html"},
             ],
         },
         {
-            "id": "homicidios",
+            "id": "mulheres",
             "index": "07",
-            "nav": "Homicídios",
+            "nav": "Mulheres",
             "kind": "broke",
-            "title": "O Brasil dos homicídios",
+            "title": "O Brasil em que mulheres viviam sob violência",
             "leitura": [
-                "A série nacional do Atlas da Violência começa em 2014, com 30,2 mortes a cada 100 mil habitantes. O pico é 2017, com 32,1. Em 2024 a taxa está em 20,1 — cerca de um terço a menos do que em 2014.",
-                "O próprio Atlas alerta: nos anos mais recentes cresceram as mortes violentas sem causa definida, o que dificulta a leitura. Por isso o texto não vai além do que a série registra.",
+                "A violência contra a mulher não cabe em um único número. O gráfico mostra só os feminicídios registrados pelas polícias civis, na tabela do Fórum Brasileiro de Segurança Pública: 1.347 vítimas em 2021 e 1.568 em 2025. A curva sobe. Isso não significa que o problema tenha sido resolvido, nem que um governo explique a variação.",
+                "O número depende de como o delegado classifica a morte, e a lei mudou em 2015 e de novo em 2024. Parte da alta pode ser reconhecimento do crime, não só mais casos. O Anuário de 2026 cita 1.571 vítimas em 2025 — a mesma família de dados, com outra consolidação. Estupro e agressão são outras séries e não entram nesta linha.",
             ],
-            "hint": "Uma linha, uma fonte, de 2014 a 2024. Não há série nacional conferida aqui para os anos anteriores.",
-            "unit": "mortes a cada 100 mil",
-            "digits": 1,
-            "axisZero": False,
-            "series": [{"name": "Homicídios registrados", "points": homic}],
+            "hint": "Vítimas em boletins de ocorrência, 2021 a 2025. Os anos anteriores não entram: esta tabela não fecha uma série nacional comparável antes disso.",
+            "unit": "vítimas registradas",
+            "digits": 0,
+            "axisZero": True,
+            "series": [{"name": "Feminicídios registrados", "points": feminicidios}],
             "sources": [
-                {"label": "Atlas da Violência 2026", "href": "https://forumseguranca.org.br/publicacoes/atlas-da-violencia/"},
-                {"label": "Relatório completo, PDF", "href": "https://forumseguranca.org.br/wp-content/uploads/2026/05/atlas-violencia-2026-relatorio-completo.pdf"},
+                {"label": "Fórum Brasileiro de Segurança Pública, feminicídios", "href": "https://publicacoes.forumseguranca.org.br/server/api/core/bitstreams/3b78fed5-6500-4c8e-b64e-d6d9c81f0f92/content"},
+                {"label": "Anuário de Segurança Pública 2026", "href": "https://forumseguranca.org.br/wp-content/uploads/2026/07/anuario-2026.pdf"},
             ],
         },
         {
@@ -338,12 +347,12 @@ site = {
             "index": "08",
             "nav": "PIB",
             "kind": "built",
-            "title": "O Brasil do PIB parado",
+            "title": "O Brasil que precisava voltar a crescer",
             "leitura": [
-                f"Se 2002 vale 100, em 2010 a economia já estava em {br(at(pib, 2010), 0)}. Em 2014, em {br(at(pib, 2014), 0)}. Em volume — já descontada a inflação — o país cresceu cerca de metade em doze anos.",
-                f"A recessão de 2015 e 2016 derrubou o índice para {br(at(pib, 2016), 0)}. Em 2023, último ano desta tabela anual do IBGE, o índice estava em {br(at(pib, 2023), 0)}.",
+                f"O tamanho da economia mudou. Se 2002 vale 100, o índice — já sem a inflação — chega a {br(at(pib, 2014), 0)} em 2014. A recessão de 2015 e 2016 derruba esse índice para {br(at(pib, 2016), 0)}. Depois a economia volta a crescer, em ritmos diferentes.",
+                f"Em 2024 o PIB cresceu 3,4%; em 2025, 2,3%. O índice fecha 2025 em {br(at(pib, 2025), 0)}. Produzir mais não mostra, sozinho, como a renda foi dividida nem quantos empregos surgiram.",
             ],
-            "hint": "Não é o PIB em reais. É um índice de volume, com 2002 valendo 100. Se o número sobe, a economia realmente cresceu, não só os preços.",
+            "hint": "Não é o PIB em reais. É um índice de volume, com 2002 valendo 100. Se o número sobe, a economia realmente cresceu, não só os preços. Os anos de 2024 e 2025 entram pela Contas Nacionais Trimestrais do IBGE.",
             "unit": "tamanho da economia, 2002 = 100",
             "digits": 1,
             "axisZero": False,
@@ -351,6 +360,8 @@ site = {
             "sources": [
                 {"label": "IBGE, Contas Nacionais", "href": "https://www.ibge.gov.br/estatisticas/economicas/contas-nacionais.html"},
                 {"label": "IBGE, tabela 6784", "href": "https://sidra.ibge.gov.br/tabela/6784"},
+                {"label": "IBGE, PIB 2024", "href": "https://agenciadenoticias.ibge.gov.br/agencia-noticias/2012-agencia-de-noticias/noticias/42775-pib-fecha-2024-em-3-4-e-registra-maior-taxa-desde-2021"},
+                {"label": "IBGE, PIB 2025", "href": "https://agenciadenoticias.ibge.gov.br/agencia-noticias/2012-agencia-de-noticias/noticias/45969-pib-cresce-2-3-em-2025"},
             ],
         },
         {
@@ -358,10 +369,10 @@ site = {
             "index": "09",
             "nav": "Reservas",
             "kind": "built",
-            "title": "O Brasil sem reservas",
+            "title": "O Brasil sem proteção contra crises externas",
             "leitura": [
-                f"No fim de 2002 o Banco Central tinha US$ {br(at(reservas, 2002), 0)} bilhões em reservas. O pico desta série é {pico_reserva['year']}, com US$ {br(pico_reserva['value'], 0)} bilhões. Em dezembro de 2025, as reservas estavam em US$ {br(at(reservas, 2025), 0)} bilhões.",
-                f"O dólar de venda, na média de dezembro, foi de R$ {br(ptax[2002], 2)} em 2002 e R$ {br(ptax[2025], 2)} em 2025. O preço do dólar segue outro caminho e, por isso, fica nesta frase, não no gráfico.",
+                f"As reservas são uma proteção em dólar diante de um choque externo. No fim de 2002 o Banco Central tinha US$ {br(at(reservas, 2002), 0)} bilhões. Em 2012, US$ {br(at(reservas, 2012), 0)} bilhões. Em dezembro de 2025, US$ {br(at(reservas, 2025), 0)} bilhões.",
+                f"Esse colchão aumenta e diminui, e não elimina os riscos. O preço do dólar é outra conta: R$ {br(ptax[2002], 2)} em dezembro de 2002 e R$ {br(ptax[2025], 2)} em dezembro de 2025. Ele não entra no gráfico.",
             ],
             "hint": "Posição de dezembro, conceito liquidez. É o colchão em dólar do Banco Central, não o preço do câmbio.",
             "unit": "US$ bilhões",
@@ -378,10 +389,10 @@ site = {
             "index": "10",
             "nav": "Exportações",
             "kind": "built",
-            "title": "O Brasil que exportava pouco",
+            "title": "O Brasil que vendia pouco ao mundo",
             "leitura": [
-                f"Em 2002 o país vendeu US$ {br(at(exp, 2002), 0)} bilhões ao exterior. Em 2025, US$ {br(at(exp, 2025), 0)} bilhões. Há quedas no caminho — 2009 e 2015 — mas a linha longa sobe.",
-                "O número é o valor em dólar das mercadorias na saída, na conta FOB do Ministério do Desenvolvimento. Não inclui serviços nem o preço em reais.",
+                f"No início dos anos 2000 o Brasil vendia bem menos ao exterior. Em 2002, as mercadorias exportadas somaram US$ {br(at(exp, 2002), 0)} bilhões. Em 2025, US$ {br(at(exp, 2025), 0)} bilhões. Houve quedas no caminho, como em 2009 e 2015.",
+                "Exportar mais não conta quais produtos saíram, quanto valor ficou no país nem se a indústria se fortaleceu. O gráfico é o valor anual em dólar, no critério FOB, só de mercadorias.",
             ],
             "hint": "Soma anual em dólar. 2026 ainda está incompleto na base, então ficou de fora.",
             "unit": "US$ bilhões",
@@ -400,8 +411,8 @@ site = {
             "kind": "built",
             "title": "O Brasil do carro velho",
             "leitura": [
-                f"Em 2002 o Brasil emplacou {br(at(carros, 2002), 2)} milhão de carros novos. Em {pico_carro['year']}, {br(pico_carro['value'], 2)} milhões. O mercado mais que dobrou.",
-                "Até 2001 a Anfavea media a venda no atacado. A partir de 2002, o emplacamento no Detran. Por isso o gráfico começa em 2002: é a série que se pode ler inteira. A frota estimada saiu de 22 milhões de veículos em 2002 para 43 milhões em 2014.",
+                f"Durante muito tempo, um carro novo esteve fora do alcance de muitas famílias. Em 2002 o Brasil emplacou {br(at(carros, 2002), 2)} milhão de automóveis zero-quilômetro. O pico é {pico_carro['year']}, com {br(pico_carro['value'], 2)} milhões. Em 2025, {br(at(carros, 2025), 2)} milhões.",
+                "Emplacar mais carros novos não significa que todas as famílias passaram a ter um, nem que comprar e manter o veículo tenha ficado fácil. A linha começa em 2002, quando a conta passa a ser o emplacamento, não a venda no atacado.",
             ],
             "hint": "Só automóveis 0 km, nacionais e importados. Não inclui motos nem a frota usada.",
             "unit": "milhões de carros novos",
@@ -409,8 +420,8 @@ site = {
             "axisZero": True,
             "series": [{"name": "Carros 0 km", "points": carros}],
             "sources": [
-                {"label": "Anfavea, anuário 2024", "href": "https://anfavea.com.br/site/wp-content/uploads/2024/04/ANFAVEA-ANUARIO-DIGITAL-2024_compressed.pdf"},
-                {"label": "Anfavea, central de dados", "href": "https://anfavea.com.br/site/central-de-dados/"},
+                {"label": "Anfavea, anuário 2026", "href": "https://anfavea.com.br/site/wp-content/uploads/2026/07/BOOK-ANUARIO-ANFAVEA-2026BAIXA.pdf"},
+                {"label": "Anfavea, anuários", "href": "https://anfavea.com.br/site/conteudos/anuarios/"},
             ],
         },
         {
@@ -418,11 +429,10 @@ site = {
             "index": "12",
             "nav": "Universidade",
             "kind": "built",
-            "title": "O Brasil sem faculdade",
+            "title": "O Brasil de portas fechadas à universidade",
             "leitura": [
-                f"Em 2002 havia {br(at(uni_presencial, 2002), 2)} milhões de matrículas em cursos presenciais de graduação. Em 2014, {br(at(uni_presencial, 2014), 2)} milhões. A sala de aula física quase dobrou.",
-                f"A linha azul entra em 2014 e soma o ensino a distância. O total chega a {br(at(uni_total, 2024), 2)} milhões em 2024 — a primeira vez que o Inep passa de 10 milhões. A presencial recua depois de 2015 porque parte da expansão foi para o EaD, não porque a universidade tenha encolhido.",
-                "No mesmo período a Rede Federal saiu de cerca de 140 escolas técnicas em 2002 para 644 campi em 2016, segundo o MEC.",
+                f"Nos anos 2000, mais pessoas chegaram à graduação presencial: {br(at(uni_presencial, 2002), 2)} milhões de matrículas em 2002 e {br(at(uni_presencial, 2014), 2)} milhões em 2014. A rede federal de ensino técnico saiu de cerca de 140 escolas em 2002 para 644 campi em 2016, segundo o MEC.",
+                f"Matrícula não é conclusão nem aprendizagem. A linha azul, desde 2014, soma o ensino a distância e chega a {br(at(uni_total, 2024), 2)} milhões em 2024. A presencial recua depois de 2015 porque parte da expansão foi para o EaD, não porque as duas contas sejam a mesma coisa.",
             ],
             "hint": "A linha clara é só o curso presencial. A azul é o total, presencial mais EaD. Por isso a azul começa mais alto em 2014.",
             "unit": "milhões de matrículas",
@@ -443,10 +453,10 @@ site = {
             "index": "13",
             "nav": "Luz",
             "kind": "built",
-            "title": "O Brasil sem luz",
+            "title": "O Brasil sem luz no campo",
             "leitura": [
-                f"Em 2002, {br(at(luz, 2002), 1)}% das casas permanentes no campo tinham energia elétrica. Em 2014, {br(at(luz, 2014), 1)}%. A falta de luz no campo quase acabou.",
-                "O Luz para Todos, criado em 2003, fez mais de 3 milhões de ligações até 2014 e chegou a cerca de 15 milhões de pessoas, segundo o Ministério de Minas e Energia. Os anos de Censo, 2000 e 2010, ficam em branco porque a PNAD não foi a campo.",
+                f"Ter energia em casa muda o estudo, o trabalho e a conservação da comida. Entre as casas permanentes no campo, {br(at(luz, 2002), 1)}% tinham luz em 2002 e {br(at(luz, 2014), 1)}% em 2014.",
+                "O Luz para Todos, de 2003, fez parte desse processo — mais de 3 milhões de ligações até 2014, segundo o Ministério de Minas e Energia. Essa conta de ligações não é a linha do gráfico, que é a proporção de domicílios. Água e esgoto são outros serviços e não entram aqui.",
             ],
             "hint": "A linha é o inverso da PNAD: 100 menos o percentual de casas rurais ainda sem luz. Não é a conta das ligações do programa, é a conta das casas.",
             "unit": "% das casas no campo",
@@ -464,11 +474,10 @@ site = {
             "index": "14",
             "nav": "Dívida",
             "kind": "plain",
-            "title": "A dívida pública",
+            "title": "O Brasil preso à dívida",
             "leitura": [
-                f"A série oficial começa em 2006, em {br(at(divida, 2006), 1)}% do PIB. Recua até {br(at(divida, 2011), 1)}% em 2011. Depois sobe. Em 2020, no ano da pandemia, chega a {br(at(divida, 2020), 1)}%. Fecha 2025 em {br(at(divida, 2025), 1)}%.",
-                "O gráfico mostra o tamanho da dívida bruta do governo em relação à economia, na metodologia do Banco Central. Não é uma queda: é o estoque, medido em percentual do PIB.",
-                "O maior gasto ligado à dívida não é pagamento de dividendos. No orçamento, o serviço da dívida se divide em duas contas: a amortização — o principal que vence — e os juros. Em 2024, segundo estudo da Câmara dos Deputados com dados do Tesouro, a amortização ficou em R$ 1,645 trilhão. Boa parte disso é rolagem: o país quita um título e emite outro. Os juros e encargos, o custo que de fato pesa no caixa, somaram R$ 384,7 bilhões.",
+                f"A dívida acompanha arrecadação, gastos, juros, crescimento e crises. Nesta série, ela começa em 2006, em {br(at(divida, 2006), 1)}% do PIB, recua até {br(at(divida, 2011), 1)}% em 2011, sobe e chega a {br(at(divida, 2020), 1)}% em 2020. Em 2025 está em {br(at(divida, 2025), 1)}%.",
+                "O tamanho da dívida, sozinho, não diz se um governo deu certo. O gráfico é o estoque em relação à economia, não o gasto do ano. Não há ponto em 2002 porque esta série não publica esse ano. Juros e amortização são outras contas: em 2024, a amortização foi de R$ 1,645 trilhão e os juros, de R$ 384,7 bilhões.",
             ],
             "hint": "Posição de dezembro. O primeiro ponto publicado é 2006. Não há dado oficial nesta série para 2002.",
             "unit": "% do PIB",
