@@ -441,6 +441,28 @@ footer h2 {
   font-size: 1.7rem;
 }
 
+.video-card {
+  max-width: 540px;
+  margin: 28px 0 8px;
+}
+
+.video-card figcaption {
+  margin: 0 0 12px;
+  font-weight: 600;
+}
+
+.video-card figcaption a {
+  color: inherit;
+}
+
+.video-fallback {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
 #fontes { scroll-margin-top: 72px; }
 
 @keyframes strike {

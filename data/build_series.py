@@ -562,6 +562,45 @@ site = {
             "hint": "",
             "sources": [],
         },
+        {
+            "id": "videos",
+            "index": "18",
+            "nav": "Vídeos",
+            "kind": "plain",
+            "title": "Vídeos auxiliares",
+            "leitura": [
+                "Vídeos que mostram quem REALMENTE quer quebrar o Brasil.",
+            ],
+            "hint": "",
+            "videos": [
+                {
+                    "title": "Linha do tempo da Pilantragem de Flávio Bolsonaro — de Clara Bueno",
+                    "label": "Linha do tempo da Pilantragem de Flávio Bolsonaro",
+                    "href": "https://www.instagram.com/reel/De0Yu4kBNs2/",
+                },
+                {
+                    "title": "O PT Quebrou o Brasil — de Arapê Malik",
+                    "label": "O PT Quebrou o Brasil — de Arapê Malik",
+                    "href": "https://www.instagram.com/reel/DezVq97s3_2/",
+                },
+                {
+                    "title": "Flávio é contra a 6x1? — de Lauany schultz",
+                    "label": "Flávio é contra a 6x1? — de Lauany schultz",
+                    "href": "https://www.instagram.com/reel/DehlhtJpxpO/",
+                },
+                {
+                    "title": "Como Bolsonaro foi Preso — de Lauany schultz e Caio Barroso",
+                    "label": "Como Bolsonaro foi Preso — de Lauany schultz e Caio Barroso",
+                    "href": "https://www.instagram.com/reel/DeK4CTmuI94/",
+                },
+                {
+                    "title": "Revelando: Grandes Igrejas, Master Negócios — de Revelando.Brasil",
+                    "label": "Revelando: Grandes Igrejas, Master Negócios — de Revelando.Brasil",
+                    "href": "https://www.instagram.com/reel/DdlzspXRPtT/",
+                },
+            ],
+            "sources": [],
+        },
     ],
 }
 

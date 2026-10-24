@@ -215,6 +215,33 @@
       observer.observe(chart);
     }
 
+    if (chapter.videos && chapter.videos.length) {
+      chapter.videos.forEach(function (video) {
+        const card = document.createElement("figure");
+        card.className = "video-card";
+        const caption = document.createElement("figcaption");
+        const titleLink = document.createElement("a");
+        titleLink.href = video.href;
+        titleLink.target = "_blank";
+        titleLink.rel = "noopener noreferrer";
+        titleLink.textContent = video.title;
+        caption.appendChild(titleLink);
+        const quote = document.createElement("blockquote");
+        quote.className = "instagram-media";
+        quote.setAttribute("data-instgrm-permalink", video.href);
+        quote.setAttribute("data-instgrm-version", "14");
+        const link = document.createElement("a");
+        link.href = video.href;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.className = "video-fallback";
+        link.textContent = video.label || video.title;
+        quote.appendChild(link);
+        card.append(caption, quote);
+        article.appendChild(card);
+      });
+    }
+
     if (chapter.sources && chapter.sources.length) {
       article.appendChild(fonteLinha(chapter.sources));
     }
@@ -224,6 +251,17 @@
   const fontesTopic = { id: "fontes", nav: "Fontes" };
   topicsBar.appendChild(topicLink(fontesTopic, false));
   topicsList.appendChild(topicLink(fontesTopic, false));
+
+  if (!document.querySelector("script[data-instagram-embed]")) {
+    const embed = document.createElement("script");
+    embed.async = true;
+    embed.src = "https://www.instagram.com/embed.js";
+    embed.setAttribute("data-instagram-embed", "");
+    embed.onload = function () {
+      if (window.instgrm && window.instgrm.Embeds) window.instgrm.Embeds.process();
+    };
+    document.body.appendChild(embed);
+  }
 
   const fontes = document.querySelector("#lista-fontes");
   seen.forEach(function (label, href) {
